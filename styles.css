@@ -46,7 +46,7 @@ button {
 
 .topbar {
   display: grid;
-  grid-template-columns: 220px 1fr 420px;
+  grid-template-columns: 220px 1fr minmax(560px, 760px);
   align-items: center;
   gap: 16px;
   border-bottom: 1px solid var(--line);
@@ -61,6 +61,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: nowrap;
   min-width: 0;
   color: #f7fafc;
   font-size: 14px;
@@ -211,21 +212,37 @@ button {
 }
 
 
-.search-control {
-  display: grid;
+
+.atlas-control {
+  display: inline-grid;
   gap: 2px;
-  width: 160px;
+  width: 150px;
+.prompt-control {
+  display: inline-grid;
+  gap: 2px;
+  width: 128px;
   font-size: 10px;
   color: var(--muted);
 }
 
-.search-control input {
+.atlas-control input {
+.prompt-control select {
   height: 30px;
-  border: 1px solid var(--line);
-  border-radius: 7px;
-  background: #10131a;
-  color: var(--text);
-  padding: 5px 7px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+#archiveModeButton {
+  width: auto;
+  min-width: 64px;
+  padding: 0 9px;
+}
+
+
+#applyPromptPresetButton {
+  width: auto;
+  min-width: 52px;
+  padding: 0 9px;
 }
 
 #addImageButton,
@@ -253,6 +270,9 @@ button {
 
 .status {
   justify-content: flex-end;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
   color: var(--muted);
   font-size: 13px;
   font-weight: 600;
@@ -346,6 +366,13 @@ button {
 
 .workspace.inspector-open .inspector-peek {
   display: none;
+}
+
+
+.inspector > label,
+.inspector > .panel-action,
+.inspector > details {
+  width: 100%;
 }
 
 .panel-title {
