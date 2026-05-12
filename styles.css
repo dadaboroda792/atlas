@@ -46,7 +46,7 @@ button {
 
 .topbar {
   display: grid;
-  grid-template-columns: 220px 1fr 420px;
+  grid-template-columns: 220px 1fr minmax(560px, 760px);
   align-items: center;
   gap: 16px;
   border-bottom: 1px solid var(--line);
@@ -204,6 +204,11 @@ button {
 }
 
 
+
+.atlas-control {
+  display: inline-grid;
+  gap: 2px;
+  width: 150px;
 .prompt-control {
   display: inline-grid;
   gap: 2px;
@@ -212,11 +217,19 @@ button {
   color: var(--muted);
 }
 
+.atlas-control input {
 .prompt-control select {
   height: 30px;
   padding: 4px 6px;
   font-size: 11px;
 }
+
+#archiveModeButton {
+  width: auto;
+  min-width: 64px;
+  padding: 0 9px;
+}
+
 
 #applyPromptPresetButton {
   width: auto;
@@ -249,6 +262,9 @@ button {
 
 .status {
   justify-content: flex-end;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
   color: var(--muted);
   font-size: 13px;
   font-weight: 600;
