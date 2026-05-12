@@ -210,11 +210,16 @@ button {
   display: inline-grid;
   gap: 2px;
   width: 150px;
+.prompt-control {
+  display: inline-grid;
+  gap: 2px;
+  width: 128px;
   font-size: 10px;
   color: var(--muted);
 }
 
 .atlas-control input {
+.prompt-control select {
   height: 30px;
   padding: 4px 6px;
   font-size: 11px;
@@ -226,6 +231,12 @@ button {
   padding: 0 9px;
 }
 
+
+#applyPromptPresetButton {
+  width: auto;
+  min-width: 52px;
+  padding: 0 9px;
+}
 
 #addImageButton,
 #autoLayoutButton,
@@ -252,7 +263,6 @@ button {
 
 .status {
   justify-content: flex-end;
-  white-space: nowrap;
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
