@@ -203,6 +203,48 @@ button {
   color: var(--muted);
 }
 
+
+
+.atlas-control {
+  display: inline-grid;
+  gap: 2px;
+  width: 150px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.atlas-control input {
+  height: 30px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+#archiveModeButton {
+  width: auto;
+  min-width: 64px;
+  padding: 0 9px;
+}
+
+.prompt-control {
+  display: inline-grid;
+  gap: 2px;
+  width: 128px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.prompt-control select {
+  height: 30px;
+  padding: 4px 6px;
+  font-size: 11px;
+}
+
+#applyPromptPresetButton {
+  width: auto;
+  min-width: 52px;
+  padding: 0 9px;
+}
+
 #addImageButton,
 #autoLayoutButton,
 #gridVisibleButton,
