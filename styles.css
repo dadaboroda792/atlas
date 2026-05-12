@@ -61,6 +61,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: nowrap;
   min-width: 0;
   color: #f7fafc;
   font-size: 14px;
@@ -358,6 +359,13 @@ button {
 
 .workspace.inspector-open .inspector-peek {
   display: none;
+}
+
+
+.inspector > label,
+.inspector > .panel-action,
+.inspector > details {
+  width: 100%;
 }
 
 .panel-title {

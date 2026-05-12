@@ -1821,7 +1821,7 @@ fitViewButton.addEventListener("click", () => {
 });
 undoButton.addEventListener("click", undo);
 redoButton.addEventListener("click", redo);
-inspectorToggle.addEventListener("click", () => workspace.classList.remove("inspector-open"));
+inspectorToggle.addEventListener("click", () => workspace.classList.toggle("inspector-open"));
 inspectorPeek.addEventListener("click", () => workspace.classList.add("inspector-open"));
 window.addEventListener("beforeunload", autosaveAtlas);
 
