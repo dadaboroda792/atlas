@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Nodal Atlas</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=2026-05-12-2">
   </head>
   <body>
     <main class="app-shell">
       <header class="topbar">
         <div class="brand">
           <span class="brand-mark"></span>
-          <span>Nodal Atlas</span>
+          <span>Nodal Atlas</span><small id="buildStamp" class="build-stamp">v2026.05.12.2</small>
         </div>
         <div class="toolbar" role="toolbar" aria-label="Инструменты">
           <button class="tool-button active" data-tool="select" title="Выбор (V)" aria-label="Выбор">V</button>
@@ -37,6 +37,10 @@
               </select>
             </label>
           </details>
+          <label class="search-control" title="Search nodes">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="title or note">
+          </label>
           <button id="addImageButton" title="Add image" aria-label="Add image">Img</button>
           <button id="autoLayoutButton" title="Auto layout" aria-label="Auto layout">Auto</button>
           <button id="gridVisibleButton" title="Toggle grid" aria-label="Toggle grid">Grid</button>
@@ -125,6 +129,6 @@
       </section>
     </main>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=2026-05-12-2"></script>
   </body>
 </html>

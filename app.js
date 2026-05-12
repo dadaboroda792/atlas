@@ -1,3 +1,4 @@
+const BUILD_VERSION = "v2026.05.12.2";
 const workspace = document.querySelector("#workspace");
 const canvasWrap = document.querySelector("#canvasWrap");
 const canvas = document.querySelector("#canvas");
@@ -21,6 +22,7 @@ const saveAsAtlasButton = document.querySelector("#saveAsAtlasButton");
 const loadAtlasButton = document.querySelector("#loadAtlasButton");
 const atlasLoadInput = document.querySelector("#atlasLoadInput");
 const addImageButton = document.querySelector("#addImageButton");
+const searchInput = document.querySelector("#searchInput");
 const autoLayoutButton = document.querySelector("#autoLayoutButton");
 const gridVisibleButton = document.querySelector("#gridVisibleButton");
 const alignAssistButton = document.querySelector("#alignAssistButton");
@@ -34,6 +36,7 @@ const inspectorToggle = document.querySelector("#inspectorToggle");
 const inspectorPeek = document.querySelector("#inspectorPeek");
 const pageTabs = document.querySelector("#pageTabs");
 const toolButtons = [...document.querySelectorAll(".tool-button")];
+const buildStamp = document.querySelector("#buildStamp");
 
 const nodeMin = { w: 150, h: 82 };
 const groupMin = { w: 180, h: 130 };
@@ -66,6 +69,7 @@ const state = {
   gridSize: 5,
   gridVisible: true,
   alignAssist: false,
+  searchQuery: "",
   currentPageId: "page1",
   pages: [],
   view: { x: 260, y: 130, scale: 1 },
@@ -84,6 +88,16 @@ state.pages = [{
 }];
 
 let renderQueued = false;
+
+
+function sanitizeLegacyControls() {
+  ["#filterTagsInput", "#archiveModeButton", "#tagsInput", "#archiveNodeButton"].forEach((selector) => {
+    document.querySelectorAll(selector).forEach((el) => el.remove());
+  });
+  const searchControls = [...document.querySelectorAll(".search-control")];
+  searchControls.slice(1).forEach((el) => el.remove());
+}
+
 
 function scheduleRender() {
   if (renderQueued) return;
@@ -594,6 +608,13 @@ function displayType(node) {
   return node.type === "custom" ? node.customType || "Custom" : node.type;
 }
 
+function isNodeVisible(node) {
+  if (!node) return false;
+  if (!state.searchQuery) return true;
+  const text = `${node.title || ""} ${node.note || ""}`.toLowerCase();
+  return text.includes(state.searchQuery);
+}
+
 function applyView() {
   const transform = `translate(${state.view.x}px, ${state.view.y}px) scale(${state.view.scale})`;
   canvas.style.transform = transform;
@@ -688,6 +709,7 @@ function renderEdges() {
     const from = itemById(edge.from);
     const to = itemById(edge.to);
     if (!from || !to) continue;
+    if ((from.id?.startsWith("n") && !isNodeVisible(from)) || (to.id?.startsWith("n") && !isNodeVisible(to))) continue;
     const rgb = paletteColor(edge.color);
     const hitPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     hitPath.setAttribute("class", "edge-hit");
@@ -846,8 +868,9 @@ function renderGhostNode() {
 }
 
 function renderNodes() {
-  removeStale(".node", new Set(state.nodes.map((node) => node.id)));
-  for (const node of state.nodes) {
+  const visibleNodes = state.nodes.filter(isNodeVisible);
+  removeStale(".node", new Set(visibleNodes.map((node) => node.id)));
+  for (const node of visibleNodes) {
     let el = canvas.querySelector(`[data-id="${node.id}"]`);
     if (!el) {
       el = document.createElement("article");
@@ -1543,6 +1566,10 @@ alignAssistButton.addEventListener("click", () => {
   state.alignAssist = !state.alignAssist;
   render();
 });
+searchInput.addEventListener("input", () => {
+  state.searchQuery = searchInput.value.trim().toLowerCase();
+  render();
+});
 loadAtlasButton.addEventListener("click", () => {
   atlasLoadInput.value = "";
   atlasLoadInput.click();
@@ -1635,6 +1662,8 @@ inspectorToggle.addEventListener("click", () => workspace.classList.remove("insp
 inspectorPeek.addEventListener("click", () => workspace.classList.add("inspector-open"));
 window.addEventListener("beforeunload", autosaveAtlas);
 
+sanitizeLegacyControls();
+if (buildStamp) buildStamp.textContent = BUILD_VERSION;
 pushHistory("Start");
 setInterval(autosaveAtlas, 5 * 60 * 1000);
 render();
