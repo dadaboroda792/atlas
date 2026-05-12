@@ -21,6 +21,8 @@ const saveAsAtlasButton = document.querySelector("#saveAsAtlasButton");
 const loadAtlasButton = document.querySelector("#loadAtlasButton");
 const atlasLoadInput = document.querySelector("#atlasLoadInput");
 const addImageButton = document.querySelector("#addImageButton");
+const promptPresetInput = document.querySelector("#promptPresetInput");
+const applyPromptPresetButton = document.querySelector("#applyPromptPresetButton");
 const autoLayoutButton = document.querySelector("#autoLayoutButton");
 const gridVisibleButton = document.querySelector("#gridVisibleButton");
 const alignAssistButton = document.querySelector("#alignAssistButton");
@@ -41,18 +43,57 @@ const imageMin = { w: 80, h: 60 };
 const autosaveKey = "nodal-atlas-autosave";
 let lastSaveName = "nodal-atlas";
 
+const promptPresets = {
+  neural: {
+    title: "Neural knowledge atlas",
+    note: "Glowing data streams between knowledge nodes, high-tech glass UI, cyan-magenta accents.",
+    color: "mint",
+    type: "idea"
+  },
+  cinematic: {
+    title: "Cinematic sci-fi worldbuilding",
+    note: "Filmic lighting, holographic panels, faction and lore cards with dramatic composition.",
+    color: "blue",
+    type: "world"
+  },
+  zoom: {
+    title: "Infinite zoom concept map",
+    note: "Multi-scale holographic nodes and fractal clusters for micro-to-macro navigation.",
+    color: "violet",
+    type: "system"
+  },
+  os: {
+    title: "Dark futuristic OS aesthetic",
+    note: "Matte dark surfaces, neon accents, modular windows, premium cybernetic visual language.",
+    color: "steel",
+    type: "feature"
+  },
+  lore: {
+    title: "Modular lore network",
+    note: "Animated pulsing connections with category-based nodes and high readability.",
+    color: "amber",
+    type: "custom",
+    customType: "Prompt"
+  }
+};
+
 const state = {
   tool: "select",
   nodes: [
-    { id: "n1", x: 120, y: 120, w: 190, h: 96, title: "Core Loop", type: "system", customType: "", color: "mint", image: "", imageH: 96, note: "Main project logic and decision flow.", state: "normal", scratch: false },
-    { id: "n2", x: 430, y: 90, w: 190, h: 96, title: "Entities", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "Characters, modules, scenes, systems.", state: "normal", scratch: false },
-    { id: "n3", x: 430, y: 250, w: 190, h: 96, title: "Relations", type: "idea", customType: "", color: "violet", image: "", imageH: 96, note: "Dependencies, causes, transitions, influence.", state: "normal", scratch: false }
+    { id: "n1", x: 80, y: 80, w: 330, h: 120, title: "Neural knowledge atlas with glowing data streams", type: "idea", customType: "", color: "mint", image: "", imageH: 96, note: "Prompt for visual direction.", state: "highlighted", scratch: false },
+    { id: "n2", x: 460, y: 80, w: 330, h: 120, title: "Cinematic sci-fi worldbuilding interface", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "Prompt for cinematic UX mood.", state: "normal", scratch: false },
+    { id: "n3", x: 840, y: 80, w: 330, h: 120, title: "Infinite zoom concept map with holographic nodes", type: "system", customType: "", color: "violet", image: "", imageH: 96, note: "Prompt for spatial navigation concept.", state: "normal", scratch: false },
+    { id: "n4", x: 270, y: 280, w: 330, h: 120, title: "Dark futuristic operating system aesthetic", type: "world", customType: "", color: "steel", image: "", imageH: 96, note: "Prompt for core visual language.", state: "normal", scratch: false },
+    { id: "n5", x: 650, y: 280, w: 330, h: 120, title: "Modular lore network with animated connections", type: "custom", customType: "Prompt", color: "amber", image: "", imageH: 96, note: "Prompt for graph interaction style.", state: "normal", scratch: false }
   ],
-  groups: [{ id: "g1", x: 86, y: 70, w: 590, h: 330, title: "Project Model" }],
+  groups: [{ id: "g1", x: 50, y: 40, w: 1170, h: 390, title: "Atlas Prompt Board" }],
   images: [],
   edges: [
-    { id: "e1", from: "n1", to: "n2", label: "activity", color: "blue", note: "" },
-    { id: "e2", from: "n1", to: "n3", label: "influence", color: "violet", note: "" }
+    { id: "e1", from: "n1", to: "n2", label: "style", color: "blue", note: "" },
+    { id: "e2", from: "n2", to: "n3", label: "depth", color: "violet", note: "" },
+    { id: "e3", from: "n1", to: "n4", label: "aesthetic", color: "steel", note: "" },
+    { id: "e4", from: "n4", to: "n5", label: "interaction", color: "amber", note: "" },
+    { id: "e5", from: "n3", to: "n5", label: "zoom", color: "mint", note: "" }
   ],
   selectedIds: new Set(["n1"]),
   selectedEdgeId: null,
@@ -1531,10 +1572,41 @@ function autoLayout() {
   render();
 }
 
+function applyPromptPreset() {
+  const key = promptPresetInput?.value;
+  const preset = promptPresets[key];
+  if (!preset) return;
+  const selected = selectedItem();
+  if (selected?.id?.startsWith("n")) {
+    selected.title = preset.title;
+    selected.note = preset.note;
+    selected.color = preset.color;
+    selected.type = preset.type;
+    selected.customType = preset.customType || "";
+    pushHistory("Prompt preset applied");
+    render();
+    return;
+  }
+  const rect = canvasWrap.getBoundingClientRect();
+  const worldX = (rect.width / 2 - state.view.x) / state.view.scale;
+  const worldY = (rect.height / 2 - state.view.y) / state.view.scale;
+  createNode(worldX, worldY);
+  const created = selectedItem();
+  if (!created?.id?.startsWith("n")) return;
+  created.title = preset.title;
+  created.note = preset.note;
+  created.color = preset.color;
+  created.type = preset.type;
+  created.customType = preset.customType || "";
+  pushHistory("Prompt preset applied");
+  render();
+}
+
 toolButtons.forEach((button) => button.addEventListener("click", () => setTool(button.dataset.tool)));
 saveAtlasButton.addEventListener("click", exportAtlas);
 saveAsAtlasButton.addEventListener("click", exportAtlasAs);
 autoLayoutButton.addEventListener("click", autoLayout);
+applyPromptPresetButton.addEventListener("click", applyPromptPreset);
 gridVisibleButton.addEventListener("click", () => {
   state.gridVisible = !state.gridVisible;
   render();
