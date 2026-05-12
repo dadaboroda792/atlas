@@ -15,6 +15,11 @@ const imageLabel = document.querySelector("#imageLabel");
 const imageInput = document.querySelector("#imageInput");
 const clearImageButton = document.querySelector("#clearImageButton");
 const noteInput = document.querySelector("#noteInput");
+const tagsInput = document.querySelector("#tagsInput");
+const archiveNodeButton = document.querySelector("#archiveNodeButton");
+const searchInput = document.querySelector("#searchInput");
+const filterTagsInput = document.querySelector("#filterTagsInput");
+const archiveModeButton = document.querySelector("#archiveModeButton");
 const fitViewButton = document.querySelector("#fitView");
 const saveAtlasButton = document.querySelector("#saveAtlasButton");
 const saveAsAtlasButton = document.querySelector("#saveAsAtlasButton");
@@ -107,6 +112,9 @@ const state = {
   gridSize: 5,
   gridVisible: true,
   alignAssist: false,
+  searchQuery: "",
+  filterTags: [],
+  archiveMode: false,
   currentPageId: "page1",
   pages: [],
   view: { x: 260, y: 130, scale: 1 },
@@ -649,6 +657,21 @@ function applyView() {
   alignAssistButton.classList.toggle("active", state.alignAssist);
 }
 
+
+function parsedTags(value) {
+  return String(value || "").split(",").map((tag) => tag.trim()).filter(Boolean);
+}
+
+function isNodeVisible(node) {
+  if (!node) return false;
+  if (!state.archiveMode && node.archived) return false;
+  const text = `${node.title || ""} ${node.note || ""} ${(node.tags || []).join(" ")}`.toLowerCase();
+  const matchesSearch = !state.searchQuery || text.includes(state.searchQuery);
+  const tags = new Set((node.tags || []).map((tag) => tag.toLowerCase()));
+  const matchesTags = !state.filterTags.length || state.filterTags.every((tag) => tags.has(tag));
+  return matchesSearch && matchesTags;
+}
+
 function updateInspector() {
   const item = selectedItem();
   const edge = selectedEdge();
@@ -663,6 +686,8 @@ function updateInspector() {
   imageInput.disabled = !isNode || multi;
   clearImageButton.disabled = !isNode || multi || !item?.image;
   noteInput.disabled = (!isNode && !edge) || multi;
+  tagsInput.disabled = !isNode || multi;
+  archiveNodeButton.disabled = !isNode || multi;
   stateLabel.classList.toggle("hidden", !isNode || multi);
   scratchButton.classList.toggle("hidden", !isNode || multi);
   imageLabel.classList.toggle("hidden", !isNode || multi);
@@ -674,6 +699,8 @@ function updateInspector() {
   nodeStateInput.value = isNode ? item.state || "normal" : "normal";
   scratchButton.textContent = isNode && item.scratch ? "Commit from scratch" : "Send to scratch";
   noteInput.value = edge ? edge.note || "" : isNode ? item.note : "";
+  tagsInput.value = isNode ? (item.tags || []).join(", ") : "";
+  archiveNodeButton.textContent = isNode && item.archived ? "Unarchive node" : "Archive node";
   customTypeLabel.classList.toggle("hidden", !isNode || item.type !== "custom");
   if (isGroup) typeInput.value = "system";
 }
@@ -729,6 +756,7 @@ function renderEdges() {
     const from = itemById(edge.from);
     const to = itemById(edge.to);
     if (!from || !to) continue;
+    if ((from.id?.startsWith("n") && !isNodeVisible(from)) || (to.id?.startsWith("n") && !isNodeVisible(to))) continue;
     const rgb = paletteColor(edge.color);
     const hitPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     hitPath.setAttribute("class", "edge-hit");
@@ -887,8 +915,9 @@ function renderGhostNode() {
 }
 
 function renderNodes() {
-  removeStale(".node", new Set(state.nodes.map((node) => node.id)));
-  for (const node of state.nodes) {
+  const visibleNodes = state.nodes.filter(isNodeVisible);
+  removeStale(".node", new Set(visibleNodes.map((node) => node.id)));
+  for (const node of visibleNodes) {
     let el = canvas.querySelector(`[data-id="${node.id}"]`);
     if (!el) {
       el = document.createElement("article");
@@ -992,6 +1021,7 @@ function render() {
     renderHistory();
     renderLinksPreview();
     renderPageTabs();
+    archiveModeButton.classList.toggle("active", state.archiveMode);
   }
 }
 
@@ -1450,7 +1480,9 @@ function normalizeAtlas(raw) {
     note: String(node.note || ""),
     state: String(node.state || "normal"),
     scratch: Boolean(node.scratch),
-    quickMode: Boolean(node.quickMode)
+    quickMode: Boolean(node.quickMode),
+    tags: Array.isArray(node.tags) ? node.tags.map((tag) => String(tag)).filter(Boolean) : [],
+    archived: Boolean(node.archived)
   }));
   const normalizedImages = images.map((image, index) => ({
     id: String(image.id || `i${Date.now()}${index}`),
@@ -1615,6 +1647,18 @@ alignAssistButton.addEventListener("click", () => {
   state.alignAssist = !state.alignAssist;
   render();
 });
+searchInput.addEventListener("input", () => {
+  state.searchQuery = searchInput.value.trim().toLowerCase();
+  render();
+});
+filterTagsInput.addEventListener("change", () => {
+  state.filterTags = parsedTags(filterTagsInput.value).map((tag) => tag.toLowerCase());
+  render();
+});
+archiveModeButton.addEventListener("click", () => {
+  state.archiveMode = !state.archiveMode;
+  render();
+});
 loadAtlasButton.addEventListener("click", () => {
   atlasLoadInput.value = "";
   atlasLoadInput.click();
@@ -1671,6 +1715,16 @@ noteInput.addEventListener("change", () => commitProperty("Note changed", () => 
   const item = selectedItem();
   if (edge) edge.note = noteInput.value;
   else if (item?.id?.startsWith("n")) item.note = noteInput.value;
+}));
+
+tagsInput.addEventListener("change", () => commitProperty("Tags changed", () => {
+  const item = selectedItem();
+  if (item?.id?.startsWith("n")) item.tags = parsedTags(tagsInput.value);
+}));
+
+archiveNodeButton.addEventListener("click", () => commitProperty("Archive changed", () => {
+  const item = selectedItem();
+  if (item?.id?.startsWith("n")) item.archived = !item.archived;
 }));
 
 imageInput.addEventListener("change", () => {
