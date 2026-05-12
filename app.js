@@ -200,6 +200,16 @@ state.pages = [{
 
 let renderQueued = false;
 
+
+function sanitizeLegacyControls() {
+  ["#filterTagsInput", "#archiveModeButton", "#tagsInput", "#archiveNodeButton"].forEach((selector) => {
+    document.querySelectorAll(selector).forEach((el) => el.remove());
+  });
+  const searchControls = [...document.querySelectorAll(".search-control")];
+  searchControls.slice(1).forEach((el) => el.remove());
+}
+
+
 function scheduleRender() {
   if (renderQueued) return;
   renderQueued = true;
