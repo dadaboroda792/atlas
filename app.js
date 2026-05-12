@@ -21,6 +21,7 @@ const saveAsAtlasButton = document.querySelector("#saveAsAtlasButton");
 const loadAtlasButton = document.querySelector("#loadAtlasButton");
 const atlasLoadInput = document.querySelector("#atlasLoadInput");
 const addImageButton = document.querySelector("#addImageButton");
+const searchInput = document.querySelector("#searchInput");
 const autoLayoutButton = document.querySelector("#autoLayoutButton");
 const gridVisibleButton = document.querySelector("#gridVisibleButton");
 const alignAssistButton = document.querySelector("#alignAssistButton");
@@ -66,6 +67,7 @@ const state = {
   gridSize: 5,
   gridVisible: true,
   alignAssist: false,
+  searchQuery: "",
   currentPageId: "page1",
   pages: [],
   view: { x: 260, y: 130, scale: 1 },
@@ -594,6 +596,13 @@ function displayType(node) {
   return node.type === "custom" ? node.customType || "Custom" : node.type;
 }
 
+function isNodeVisible(node) {
+  if (!node) return false;
+  if (!state.searchQuery) return true;
+  const text = `${node.title || ""} ${node.note || ""}`.toLowerCase();
+  return text.includes(state.searchQuery);
+}
+
 function applyView() {
   const transform = `translate(${state.view.x}px, ${state.view.y}px) scale(${state.view.scale})`;
   canvas.style.transform = transform;
@@ -688,6 +697,7 @@ function renderEdges() {
     const from = itemById(edge.from);
     const to = itemById(edge.to);
     if (!from || !to) continue;
+    if ((from.id?.startsWith("n") && !isNodeVisible(from)) || (to.id?.startsWith("n") && !isNodeVisible(to))) continue;
     const rgb = paletteColor(edge.color);
     const hitPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     hitPath.setAttribute("class", "edge-hit");
@@ -846,8 +856,9 @@ function renderGhostNode() {
 }
 
 function renderNodes() {
-  removeStale(".node", new Set(state.nodes.map((node) => node.id)));
-  for (const node of state.nodes) {
+  const visibleNodes = state.nodes.filter(isNodeVisible);
+  removeStale(".node", new Set(visibleNodes.map((node) => node.id)));
+  for (const node of visibleNodes) {
     let el = canvas.querySelector(`[data-id="${node.id}"]`);
     if (!el) {
       el = document.createElement("article");
@@ -1541,6 +1552,10 @@ gridVisibleButton.addEventListener("click", () => {
 });
 alignAssistButton.addEventListener("click", () => {
   state.alignAssist = !state.alignAssist;
+  render();
+});
+searchInput.addEventListener("input", () => {
+  state.searchQuery = searchInput.value.trim().toLowerCase();
   render();
 });
 loadAtlasButton.addEventListener("click", () => {
