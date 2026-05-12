@@ -1,3 +1,4 @@
+const BUILD_VERSION = "v2026.05.12.1";
 const workspace = document.querySelector("#workspace");
 const canvasWrap = document.querySelector("#canvasWrap");
 const canvas = document.querySelector("#canvas");
@@ -41,6 +42,7 @@ const inspectorToggle = document.querySelector("#inspectorToggle");
 const inspectorPeek = document.querySelector("#inspectorPeek");
 const pageTabs = document.querySelector("#pageTabs");
 const toolButtons = [...document.querySelectorAll(".tool-button")];
+const buildStamp = document.querySelector("#buildStamp");
 
 const nodeMin = { w: 150, h: 82 };
 const groupMin = { w: 180, h: 130 };
@@ -1832,6 +1834,7 @@ inspectorToggle.addEventListener("click", () => workspace.classList.toggle("insp
 inspectorPeek.addEventListener("click", () => workspace.classList.add("inspector-open"));
 window.addEventListener("beforeunload", autosaveAtlas);
 
+if (buildStamp) buildStamp.textContent = BUILD_VERSION;
 pushHistory("Start");
 setInterval(autosaveAtlas, 5 * 60 * 1000);
 render();

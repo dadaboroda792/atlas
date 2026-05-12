@@ -68,6 +68,13 @@ button {
   font-weight: 650;
 }
 
+
+.build-stamp {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
 .brand-mark {
   width: 18px;
   height: 18px;
