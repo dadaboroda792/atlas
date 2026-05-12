@@ -1,0 +1,25 @@
+name: Force Merge Codex
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  force-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Merge using theirs
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+
+          git fetch origin main
+          git merge -X theirs origin/main || true
+
+          git push

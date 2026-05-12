@@ -1,4 +1,4 @@
-const BUILD_VERSION = "v2026.05.12.2";
+const BUILD_VERSION = "v2026.05.12.1";
 const workspace = document.querySelector("#workspace");
 const canvasWrap = document.querySelector("#canvasWrap");
 const canvas = document.querySelector("#canvas");
@@ -16,13 +16,19 @@ const imageLabel = document.querySelector("#imageLabel");
 const imageInput = document.querySelector("#imageInput");
 const clearImageButton = document.querySelector("#clearImageButton");
 const noteInput = document.querySelector("#noteInput");
+const tagsInput = document.querySelector("#tagsInput");
+const archiveNodeButton = document.querySelector("#archiveNodeButton");
+const searchInput = document.querySelector("#searchInput");
+const filterTagsInput = document.querySelector("#filterTagsInput");
+const archiveModeButton = document.querySelector("#archiveModeButton");
 const fitViewButton = document.querySelector("#fitView");
 const saveAtlasButton = document.querySelector("#saveAtlasButton");
 const saveAsAtlasButton = document.querySelector("#saveAsAtlasButton");
 const loadAtlasButton = document.querySelector("#loadAtlasButton");
 const atlasLoadInput = document.querySelector("#atlasLoadInput");
 const addImageButton = document.querySelector("#addImageButton");
-const searchInput = document.querySelector("#searchInput");
+const promptPresetInput = document.querySelector("#promptPresetInput");
+const applyPromptPresetButton = document.querySelector("#applyPromptPresetButton");
 const autoLayoutButton = document.querySelector("#autoLayoutButton");
 const gridVisibleButton = document.querySelector("#gridVisibleButton");
 const alignAssistButton = document.querySelector("#alignAssistButton");
@@ -44,18 +50,121 @@ const imageMin = { w: 80, h: 60 };
 const autosaveKey = "nodal-atlas-autosave";
 let lastSaveName = "nodal-atlas";
 
+const promptPresets = {
+  neural: {
+    title: "Neural knowledge atlas",
+    note: "Glowing data streams between knowledge nodes, high-tech glass UI, cyan-magenta accents.",
+    color: "mint",
+    type: "idea"
+  },
+  cinematic: {
+    title: "Cinematic sci-fi worldbuilding",
+    note: "Filmic lighting, holographic panels, faction and lore cards with dramatic composition.",
+    color: "blue",
+    type: "world"
+  },
+  zoom: {
+    title: "Infinite zoom concept map",
+    note: "Multi-scale holographic nodes and fractal clusters for micro-to-macro navigation.",
+    color: "violet",
+    type: "system"
+  },
+  os: {
+    title: "Dark futuristic OS aesthetic",
+    note: "Matte dark surfaces, neon accents, modular windows, premium cybernetic visual language.",
+    color: "steel",
+    type: "feature"
+  },
+  lore: {
+    title: "Modular lore network",
+    note: "Animated pulsing connections with category-based nodes and high readability.",
+    color: "amber",
+    type: "custom",
+    customType: "Prompt"
+  }
+};
+
 const state = {
   tool: "select",
   nodes: [
-    { id: "n1", x: 120, y: 120, w: 190, h: 96, title: "Core Loop", type: "system", customType: "", color: "mint", image: "", imageH: 96, note: "Main project logic and decision flow.", state: "normal", scratch: false },
-    { id: "n2", x: 430, y: 90, w: 190, h: 96, title: "Entities", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "Characters, modules, scenes, systems.", state: "normal", scratch: false },
-    { id: "n3", x: 430, y: 250, w: 190, h: 96, title: "Relations", type: "idea", customType: "", color: "violet", image: "", imageH: 96, note: "Dependencies, causes, transitions, influence.", state: "normal", scratch: false }
+    { id: "n1", x: 90, y: 80, w: 250, h: 110, title: "Atlas Content", type: "system", customType: "", color: "mint", image: "", imageH: 96, note: "Core domain content categories.", state: "highlighted", scratch: false },
+    { id: "n2", x: 380, y: 80, w: 250, h: 110, title: "Atlas Features", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "Interactive graph capabilities.", state: "normal", scratch: false },
+    { id: "n3", x: 670, y: 80, w: 250, h: 110, title: "Atlas UI", type: "world", customType: "", color: "violet", image: "", imageH: 96, note: "Visual style and presentation layer.", state: "normal", scratch: false },
+    { id: "n4", x: 960, y: 80, w: 250, h: 110, title: "Atlas Systems", type: "feature", customType: "", color: "steel", image: "", imageH: 96, note: "Operational platform systems.", state: "normal", scratch: false },
+
+    { id: "n5", x: 90, y: 240, w: 190, h: 96, title: "factions", type: "idea", customType: "", color: "mint", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n6", x: 290, y: 240, w: 190, h: 96, title: "lore", type: "idea", customType: "", color: "mint", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n7", x: 90, y: 350, w: 190, h: 96, title: "locations", type: "idea", customType: "", color: "mint", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n8", x: 290, y: 350, w: 190, h: 96, title: "characters", type: "idea", customType: "", color: "mint", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+
+    { id: "n9", x: 500, y: 240, w: 230, h: 96, title: "zoom system", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n10", x: 740, y: 240, w: 230, h: 96, title: "animated connections", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n11", x: 500, y: 350, w: 230, h: 96, title: "hierarchy visualization", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n12", x: 740, y: 350, w: 230, h: 96, title: "node grouping", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n13", x: 620, y: 460, w: 230, h: 96, title: "dependency rendering", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+
+    { id: "n14", x: 980, y: 240, w: 230, h: 96, title: "holographic glow", type: "world", customType: "", color: "violet", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n15", x: 1220, y: 240, w: 230, h: 96, title: "cinematic transitions", type: "world", customType: "", color: "violet", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n16", x: 980, y: 350, w: 230, h: 96, title: "minimap", type: "world", customType: "", color: "violet", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n17", x: 1220, y: 350, w: 230, h: 96, title: "layered depth", type: "world", customType: "", color: "violet", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n18", x: 1100, y: 460, w: 230, h: 96, title: "fog effects", type: "world", customType: "", color: "violet", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+
+    { id: "n19", x: 1470, y: 240, w: 210, h: 96, title: "search", type: "feature", customType: "", color: "steel", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n20", x: 1690, y: 240, w: 210, h: 96, title: "filtering", type: "feature", customType: "", color: "steel", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n21", x: 1470, y: 350, w: 210, h: 96, title: "tagging", type: "feature", customType: "", color: "steel", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n22", x: 1690, y: 350, w: 210, h: 96, title: "timeline mode", type: "feature", customType: "", color: "steel", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n23", x: 1580, y: 460, w: 210, h: 96, title: "archive mode", type: "feature", customType: "", color: "steel", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+
+    { id: "n24", x: 520, y: 610, w: 320, h: 110, title: "dynamic neural-style connection rendering", type: "custom", customType: "Atlas feature", color: "amber", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n25", x: 860, y: 610, w: 320, h: 110, title: "layered zoom navigation", type: "custom", customType: "Atlas system", color: "amber", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n26", x: 1200, y: 610, w: 320, h: 110, title: "animated data flow", type: "custom", customType: "UI feature", color: "amber", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n27", x: 1540, y: 610, w: 320, h: 110, title: "glowing dependency links", type: "custom", customType: "Visual system", color: "amber", image: "", imageH: 96, note: "", state: "normal", scratch: false },
+    { id: "n28", x: 1880, y: 610, w: 320, h: 110, title: "expandable node containers", type: "custom", customType: "Atlas functionality", color: "amber", image: "", imageH: 96, note: "", state: "normal", scratch: false }
   ],
-  groups: [{ id: "g1", x: 86, y: 70, w: 590, h: 330, title: "Project Model" }],
+  groups: [
+    { id: "g1", x: 60, y: 40, w: 1870, h: 550, title: "Atlas Capability Map" },
+    { id: "g2", x: 470, y: 580, w: 1760, h: 170, title: "Priority expansion features" }
+  ],
   images: [],
   edges: [
-    { id: "e1", from: "n1", to: "n2", label: "activity", color: "blue", note: "" },
-    { id: "e2", from: "n1", to: "n3", label: "influence", color: "violet", note: "" }
+    { id: "e1", from: "n1", to: "n5", label: "contains", color: "mint", note: "" },
+    { id: "e2", from: "n1", to: "n6", label: "contains", color: "mint", note: "" },
+    { id: "e3", from: "n1", to: "n7", label: "contains", color: "mint", note: "" },
+    { id: "e4", from: "n1", to: "n8", label: "contains", color: "mint", note: "" },
+    { id: "e5", from: "n2", to: "n9", label: "includes", color: "blue", note: "" },
+    { id: "e6", from: "n2", to: "n10", label: "includes", color: "blue", note: "" },
+    { id: "e7", from: "n2", to: "n11", label: "includes", color: "blue", note: "" },
+    { id: "e8", from: "n2", to: "n12", label: "includes", color: "blue", note: "" },
+    { id: "e9", from: "n2", to: "n13", label: "includes", color: "blue", note: "" },
+    { id: "e10", from: "n3", to: "n14", label: "style", color: "violet", note: "" },
+    { id: "e11", from: "n3", to: "n15", label: "style", color: "violet", note: "" },
+    { id: "e12", from: "n3", to: "n16", label: "style", color: "violet", note: "" },
+    { id: "e13", from: "n3", to: "n17", label: "style", color: "violet", note: "" },
+    { id: "e14", from: "n3", to: "n18", label: "style", color: "violet", note: "" },
+    { id: "e15", from: "n4", to: "n19", label: "system", color: "steel", note: "" },
+    { id: "e16", from: "n4", to: "n20", label: "system", color: "steel", note: "" },
+    { id: "e17", from: "n4", to: "n21", label: "system", color: "steel", note: "" },
+    { id: "e18", from: "n4", to: "n22", label: "system", color: "steel", note: "" },
+    { id: "e19", from: "n4", to: "n23", label: "system", color: "steel", note: "" },
+    { id: "e20", from: "n2", to: "n24", label: "priority", color: "amber", note: "" },
+    { id: "e21", from: "n9", to: "n25", label: "extends", color: "amber", note: "" },
+    { id: "e22", from: "n10", to: "n26", label: "extends", color: "amber", note: "" },
+    { id: "e23", from: "n13", to: "n27", label: "extends", color: "amber", note: "" },
+    { id: "e24", from: "n12", to: "n28", label: "extends", color: "amber", note: "" }
+    { id: "n1", x: 80, y: 80, w: 330, h: 120, title: "Neural knowledge atlas with glowing data streams", type: "idea", customType: "", color: "mint", image: "", imageH: 96, note: "Prompt for visual direction.", state: "highlighted", scratch: false },
+    { id: "n2", x: 460, y: 80, w: 330, h: 120, title: "Cinematic sci-fi worldbuilding interface", type: "feature", customType: "", color: "blue", image: "", imageH: 96, note: "Prompt for cinematic UX mood.", state: "normal", scratch: false },
+    { id: "n3", x: 840, y: 80, w: 330, h: 120, title: "Infinite zoom concept map with holographic nodes", type: "system", customType: "", color: "violet", image: "", imageH: 96, note: "Prompt for spatial navigation concept.", state: "normal", scratch: false },
+    { id: "n4", x: 270, y: 280, w: 330, h: 120, title: "Dark futuristic operating system aesthetic", type: "world", customType: "", color: "steel", image: "", imageH: 96, note: "Prompt for core visual language.", state: "normal", scratch: false },
+    { id: "n5", x: 650, y: 280, w: 330, h: 120, title: "Modular lore network with animated connections", type: "custom", customType: "Prompt", color: "amber", image: "", imageH: 96, note: "Prompt for graph interaction style.", state: "normal", scratch: false }
+  ],
+  groups: [{ id: "g1", x: 50, y: 40, w: 1170, h: 390, title: "Atlas Prompt Board" }],
+  images: [],
+  edges: [
+    { id: "e1", from: "n1", to: "n2", label: "style", color: "blue", note: "" },
+    { id: "e2", from: "n2", to: "n3", label: "depth", color: "violet", note: "" },
+    { id: "e3", from: "n1", to: "n4", label: "aesthetic", color: "steel", note: "" },
+    { id: "e4", from: "n4", to: "n5", label: "interaction", color: "amber", note: "" },
+    { id: "e5", from: "n3", to: "n5", label: "zoom", color: "mint", note: "" }
   ],
   selectedIds: new Set(["n1"]),
   selectedEdgeId: null,
@@ -70,6 +179,8 @@ const state = {
   gridVisible: true,
   alignAssist: false,
   searchQuery: "",
+  filterTags: [],
+  archiveMode: false,
   currentPageId: "page1",
   pages: [],
   view: { x: 260, y: 130, scale: 1 },
@@ -629,6 +740,21 @@ function applyView() {
   alignAssistButton.classList.toggle("active", state.alignAssist);
 }
 
+
+function parsedTags(value) {
+  return String(value || "").split(",").map((tag) => tag.trim()).filter(Boolean);
+}
+
+function isNodeVisible(node) {
+  if (!node) return false;
+  if (!state.archiveMode && node.archived) return false;
+  const text = `${node.title || ""} ${node.note || ""} ${(node.tags || []).join(" ")}`.toLowerCase();
+  const matchesSearch = !state.searchQuery || text.includes(state.searchQuery);
+  const tags = new Set((node.tags || []).map((tag) => tag.toLowerCase()));
+  const matchesTags = !state.filterTags.length || state.filterTags.every((tag) => tags.has(tag));
+  return matchesSearch && matchesTags;
+}
+
 function updateInspector() {
   const item = selectedItem();
   const edge = selectedEdge();
@@ -643,6 +769,8 @@ function updateInspector() {
   imageInput.disabled = !isNode || multi;
   clearImageButton.disabled = !isNode || multi || !item?.image;
   noteInput.disabled = (!isNode && !edge) || multi;
+  tagsInput.disabled = !isNode || multi;
+  archiveNodeButton.disabled = !isNode || multi;
   stateLabel.classList.toggle("hidden", !isNode || multi);
   scratchButton.classList.toggle("hidden", !isNode || multi);
   imageLabel.classList.toggle("hidden", !isNode || multi);
@@ -654,6 +782,8 @@ function updateInspector() {
   nodeStateInput.value = isNode ? item.state || "normal" : "normal";
   scratchButton.textContent = isNode && item.scratch ? "Commit from scratch" : "Send to scratch";
   noteInput.value = edge ? edge.note || "" : isNode ? item.note : "";
+  tagsInput.value = isNode ? (item.tags || []).join(", ") : "";
+  archiveNodeButton.textContent = isNode && item.archived ? "Unarchive node" : "Archive node";
   customTypeLabel.classList.toggle("hidden", !isNode || item.type !== "custom");
   if (isGroup) typeInput.value = "system";
 }
@@ -974,6 +1104,7 @@ function render() {
     renderHistory();
     renderLinksPreview();
     renderPageTabs();
+    archiveModeButton.classList.toggle("active", state.archiveMode);
   }
 }
 
@@ -1432,7 +1563,9 @@ function normalizeAtlas(raw) {
     note: String(node.note || ""),
     state: String(node.state || "normal"),
     scratch: Boolean(node.scratch),
-    quickMode: Boolean(node.quickMode)
+    quickMode: Boolean(node.quickMode),
+    tags: Array.isArray(node.tags) ? node.tags.map((tag) => String(tag)).filter(Boolean) : [],
+    archived: Boolean(node.archived)
   }));
   const normalizedImages = images.map((image, index) => ({
     id: String(image.id || `i${Date.now()}${index}`),
@@ -1554,10 +1687,41 @@ function autoLayout() {
   render();
 }
 
+function applyPromptPreset() {
+  const key = promptPresetInput?.value;
+  const preset = promptPresets[key];
+  if (!preset) return;
+  const selected = selectedItem();
+  if (selected?.id?.startsWith("n")) {
+    selected.title = preset.title;
+    selected.note = preset.note;
+    selected.color = preset.color;
+    selected.type = preset.type;
+    selected.customType = preset.customType || "";
+    pushHistory("Prompt preset applied");
+    render();
+    return;
+  }
+  const rect = canvasWrap.getBoundingClientRect();
+  const worldX = (rect.width / 2 - state.view.x) / state.view.scale;
+  const worldY = (rect.height / 2 - state.view.y) / state.view.scale;
+  createNode(worldX, worldY);
+  const created = selectedItem();
+  if (!created?.id?.startsWith("n")) return;
+  created.title = preset.title;
+  created.note = preset.note;
+  created.color = preset.color;
+  created.type = preset.type;
+  created.customType = preset.customType || "";
+  pushHistory("Prompt preset applied");
+  render();
+}
+
 toolButtons.forEach((button) => button.addEventListener("click", () => setTool(button.dataset.tool)));
 saveAtlasButton.addEventListener("click", exportAtlas);
 saveAsAtlasButton.addEventListener("click", exportAtlasAs);
 autoLayoutButton.addEventListener("click", autoLayout);
+applyPromptPresetButton.addEventListener("click", applyPromptPreset);
 gridVisibleButton.addEventListener("click", () => {
   state.gridVisible = !state.gridVisible;
   render();
@@ -1568,6 +1732,14 @@ alignAssistButton.addEventListener("click", () => {
 });
 searchInput.addEventListener("input", () => {
   state.searchQuery = searchInput.value.trim().toLowerCase();
+  render();
+});
+filterTagsInput.addEventListener("change", () => {
+  state.filterTags = parsedTags(filterTagsInput.value).map((tag) => tag.toLowerCase());
+  render();
+});
+archiveModeButton.addEventListener("click", () => {
+  state.archiveMode = !state.archiveMode;
   render();
 });
 loadAtlasButton.addEventListener("click", () => {
@@ -1628,6 +1800,16 @@ noteInput.addEventListener("change", () => commitProperty("Note changed", () => 
   else if (item?.id?.startsWith("n")) item.note = noteInput.value;
 }));
 
+tagsInput.addEventListener("change", () => commitProperty("Tags changed", () => {
+  const item = selectedItem();
+  if (item?.id?.startsWith("n")) item.tags = parsedTags(tagsInput.value);
+}));
+
+archiveNodeButton.addEventListener("click", () => commitProperty("Archive changed", () => {
+  const item = selectedItem();
+  if (item?.id?.startsWith("n")) item.archived = !item.archived;
+}));
+
 imageInput.addEventListener("change", () => {
   const file = imageInput.files?.[0];
   const item = selectedItem();
@@ -1658,11 +1840,10 @@ fitViewButton.addEventListener("click", () => {
 });
 undoButton.addEventListener("click", undo);
 redoButton.addEventListener("click", redo);
-inspectorToggle.addEventListener("click", () => workspace.classList.remove("inspector-open"));
+inspectorToggle.addEventListener("click", () => workspace.classList.toggle("inspector-open"));
 inspectorPeek.addEventListener("click", () => workspace.classList.add("inspector-open"));
 window.addEventListener("beforeunload", autosaveAtlas);
 
-sanitizeLegacyControls();
 if (buildStamp) buildStamp.textContent = BUILD_VERSION;
 pushHistory("Start");
 setInterval(autosaveAtlas, 5 * 60 * 1000);

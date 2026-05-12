@@ -4,14 +4,14 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Nodal Atlas</title>
-    <link rel="stylesheet" href="styles.css?v=2026-05-12-2">
+    <link rel="stylesheet" href="styles.css?v=2026-05-12-1">
   </head>
   <body>
     <main class="app-shell">
       <header class="topbar">
         <div class="brand">
           <span class="brand-mark"></span>
-          <span>Nodal Atlas</span><small id="buildStamp" class="build-stamp">v2026.05.12.2</small>
+          <span>Nodal Atlas</span><small id="buildStamp" class="build-stamp">v2026.05.12.1</small>
         </div>
         <div class="toolbar" role="toolbar" aria-label="Инструменты">
           <button class="tool-button active" data-tool="select" title="Выбор (V)" aria-label="Выбор">V</button>
@@ -37,10 +37,36 @@
               </select>
             </label>
           </details>
-          <label class="search-control" title="Search nodes">
+
+          <label class="atlas-control" title="Search atlas">
             <span>Search</span>
-            <input id="searchInput" type="search" placeholder="title or note">
+            <input id="searchInput" type="search" placeholder="title, note, tag">
           </label>
+          <label class="atlas-control" title="Filter by tags (comma separated)">
+            <span>Tags</span>
+            <input id="filterTagsInput" type="text" placeholder="lore, ui">
+          </label>
+          <button id="archiveModeButton" title="Toggle archive mode" aria-label="Toggle archive mode">Archive</button>
+          <label class="atlas-control" title="Search atlas">
+            <span>Search</span>
+            <input id="searchInput" type="search" placeholder="title, note, tag">
+          </label>
+          <label class="atlas-control" title="Filter by tags (comma separated)">
+            <span>Tags</span>
+            <input id="filterTagsInput" type="text" placeholder="lore, ui">
+          </label>
+          <button id="archiveModeButton" title="Toggle archive mode" aria-label="Toggle archive mode">Archive</button>
+          <label class="prompt-control" title="Prompt feature presets">
+            <span>Prompt</span>
+            <select id="promptPresetInput">
+              <option value="neural">Neural streams</option>
+              <option value="cinematic">Cinematic sci-fi</option>
+              <option value="zoom">Infinite zoom</option>
+              <option value="os">Dark OS</option>
+              <option value="lore">Modular lore</option>
+            </select>
+          </label>
+          <button id="applyPromptPresetButton" title="Apply prompt preset" aria-label="Apply prompt preset">Apply</button>
           <button id="addImageButton" title="Add image" aria-label="Add image">Img</button>
           <button id="autoLayoutButton" title="Auto layout" aria-label="Auto layout">Auto</button>
           <button id="gridVisibleButton" title="Toggle grid" aria-label="Toggle grid">Grid</button>
@@ -109,6 +135,11 @@
             <span>Заметка</span>
             <textarea id="noteInput" rows="5"></textarea>
           </label>
+          <label>
+            <span>Tags</span>
+            <input id="tagsInput" type="text" autocomplete="off" placeholder="comma, separated, tags">
+          </label>
+          <button class="panel-action" id="archiveNodeButton" type="button">Toggle archive on node</button>
           <details class="history-panel">
             <summary>История</summary>
             <ol id="historyList"></ol>
@@ -129,6 +160,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=2026-05-12-2"></script>
+    <script src="app.js?v=2026-05-12-1"></script>
   </body>
 </html>
