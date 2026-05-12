@@ -707,6 +707,13 @@ function displayType(node) {
   return node.type === "custom" ? node.customType || "Custom" : node.type;
 }
 
+function isNodeVisible(node) {
+  if (!node) return false;
+  if (!state.searchQuery) return true;
+  const text = `${node.title || ""} ${node.note || ""}`.toLowerCase();
+  return text.includes(state.searchQuery);
+}
+
 function applyView() {
   const transform = `translate(${state.view.x}px, ${state.view.y}px) scale(${state.view.scale})`;
   canvas.style.transform = transform;
